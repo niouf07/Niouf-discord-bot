@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const winston = require("winston");
 const intents = new Discord.IntentsBitField(3276799);
 const bot = new Discord.Client({
   intents,
@@ -14,10 +15,19 @@ bot.login(config.token);
 loadCommands(bot);
 loadEvents(bot);
 
-bot.on("messageCreate", async (message) => {
-  if (message.content === "n!ping")
-    return bot.commands.get("ping").run(bot, message);
+const logger = winston.createLogger({
+  level: "error",
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+  ],
 });
-bot.on("ready", async () => {
-  console.log(`${bot.user.tag} est en ligne`);
-});
+
+function handleError(error) {
+  logger.log("error", "Une erreur est survenue", {
+    details: error.details,
+  });
+}
+
+// Appel de la fonction en passant une erreur en argument
+handleError(new Error("Erreur de test"));
